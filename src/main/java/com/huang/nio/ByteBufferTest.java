@@ -40,6 +40,9 @@ import java.nio.ByteBuffer;
 
 //reset
 //回退到之前标记的position
+
+//hasRemaining()
+//还能继续读下去么？
 public class ByteBufferTest {
 	
 	public static void main(String[] args) {

@@ -23,6 +23,7 @@ public class MappingDataSource implements DataSource {
 
 	private final File dataFile;
 
+	//先进先出队列
 	private final ConcurrentLinkedQueue<Row> rowQueue = new ConcurrentLinkedQueue<>();
 
 	public MappingDataSource(File dataFile) {
