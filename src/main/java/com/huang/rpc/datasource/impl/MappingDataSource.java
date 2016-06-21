@@ -55,6 +55,7 @@ public class MappingDataSource implements DataSource {
 			final long fileSize = fileChannel.size();
 			while(pos<fileSize){
 				final long loadStartTime = System.currentTimeMillis();
+				// TODO MappedByteBuffer
 				final MappedByteBuffer buffer = fileChannel.map(FileChannel.MapMode.READ_ONLY,pos,fixBufferSize(pos, fileSize)).load();
 				final long loadEndTime = System.currentTimeMillis();
 				log.info("[datasource] loading...,pos={},size={},cost={}",new Object[]{pos,buffer.capacity(),(loadEndTime - loadStartTime)});
