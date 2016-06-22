@@ -19,7 +19,7 @@ public class MappingDataSource implements DataSource {
 
 	private static final Logger log = LoggerFactory.getLogger(MappingDataSource.class);
 
-	private static final int BUFFER_SIZE = 512 * 1024 * 1024;
+	private static final int BUFFER_SIZE = 4*1024; //4k 操作系统分页大小
 
 	private final File dataFile;
 
@@ -65,7 +65,7 @@ public class MappingDataSource implements DataSource {
 					switch (state) {
 						case READ_D:{
 							final byte b = buffer.get();
-							log.info("read_d:"+b+",charValue:"+(char)b+",position:"+buffer.position());
+//							log.info("read_d:"+b+",charValue:"+(char)b+",position:"+buffer.position());
 							if(b == '\r'){
 								state = DecodeLineState.READ_R;
 							}else{
@@ -75,7 +75,7 @@ public class MappingDataSource implements DataSource {
 						}
 						case READ_R:{
 							final byte b = buffer.get();
-							log.info("read_d:"+b+",charValue:"+(char)b+"position:"+buffer.position());
+//							log.info("read_d:"+b+",charValue:"+(char)b+"position:"+buffer.position());
 							if(b!='\n'){
 								throw new IOException("illegal format, \\n did not behind \\r, b=" + b);
 							}
@@ -96,7 +96,9 @@ public class MappingDataSource implements DataSource {
 					}
 				}
 				pos+=buffer.capacity();
+				log.info("unmap buffer:"+buffer.capacity());
 				Utils.unmap(buffer);
+				log.info("start gc:");
 				Runtime.getRuntime().gc();
 			}
 		}//try
