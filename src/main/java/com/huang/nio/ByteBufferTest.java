@@ -93,6 +93,8 @@ public class ByteBufferTest {
         System.out.println("compact之后："+buffer.position());    
         System.out.println("compact之后："+buffer.limit());    
         System.out.println("compact之后："+buffer.capacity()); 
+        
+        System.out.println("Integer.BYTES,"+Integer.BYTES);
 	}
 
 }

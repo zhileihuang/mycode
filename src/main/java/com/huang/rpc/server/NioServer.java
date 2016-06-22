@@ -174,11 +174,11 @@ public class NioServer {
 							final SelectionKey key = iter.next();
 							iter.remove();
 
-							if (key.isReadable()) {
+							if (key.isReadable()) { //获取数据
 								socketChannel.read(buffer);
 								buffer.flip();
 								while (true) {
-									if (buffer.remaining() < Integer.BYTES) {
+									if (buffer.remaining() < Integer.BYTES) { //半包，不处理，直接返回
 										break;
 									}
 									final int type = buffer.getInt();
