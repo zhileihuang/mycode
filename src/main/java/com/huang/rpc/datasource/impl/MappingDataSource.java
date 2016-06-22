@@ -65,6 +65,7 @@ public class MappingDataSource implements DataSource {
 					switch (state) {
 						case READ_D:{
 							final byte b = buffer.get();
+							log.info("read_d:"+b+","+buffer.position());
 							if(b == '\r'){
 								state = DecodeLineState.READ_R;
 							}else{
@@ -74,6 +75,7 @@ public class MappingDataSource implements DataSource {
 						}
 						case READ_R:{
 							final byte b = buffer.get();
+							log.info("read_r:"+b+","+buffer.position());
 							if(b!='\n'){
 								throw new IOException("illegal format, \\n did not behind \\r, b=" + b);
 							}
