@@ -136,7 +136,7 @@ public class Main {
 	}
 	
 	public static void main(String... args) throws IOException, InterruptedException {
-		args = new String[]{"hello world","data.txt","9999","mycode.properties"};
+		args = new String[]{"hello world","newdata.txt","9999","mycode.properties"};
     	startServer(args);
 	}
 	

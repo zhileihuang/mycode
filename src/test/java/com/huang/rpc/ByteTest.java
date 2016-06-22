@@ -6,10 +6,12 @@ public class ByteTest {
 	
 	@Test
 	public void test1(){
-		byte b = '\r';
-		System.out.println(b);
-		byte n = '\b';
+		byte r = '\r';
+		System.out.println(r);
+		byte n = '\n';
 		System.out.println(n);
+		byte t = '\t';
+		System.out.println(t);
 	}
 
 }
