@@ -17,7 +17,6 @@ import com.huang.rpc.client.ClientConfig;
 import com.huang.rpc.client.NioClient;
 import com.huang.rpc.common.Options;
 import com.huang.rpc.datasource.DataPersistence;
-import com.huang.rpc.datasource.impl.BucketDataPersistence;
 import com.huang.rpc.datasource.impl.PageDataPersistence;
 
 public class ClientMain {
