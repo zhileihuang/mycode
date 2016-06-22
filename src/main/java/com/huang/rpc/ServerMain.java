@@ -2,9 +2,9 @@ package com.huang.rpc;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.LockSupport;
 import com.huang.rpc.common.Options;
 import com.huang.rpc.datasource.DataSource;
 import com.huang.rpc.datasource.impl.MappingDataSource;
@@ -26,7 +26,6 @@ public class ServerMain {
 		final DataSource dataSource = new MappingDataSource(config.getDataFile());
 		
 		dataSource.init();
-		final CountDownLatch countDownLatch = new CountDownLatch(1);
 		final ExecutorService executorService = Executors.newCachedThreadPool();
 		
 		final NioServer server = new NioServer(dataSource, executorService, config, options);
@@ -46,7 +45,8 @@ public class ServerMain {
 			}
 		});
 		
-		countDownLatch.await();
+		LockSupport.park();
+
 	}
 	
 	public static void main(String... args) throws IOException, InterruptedException {
