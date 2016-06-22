@@ -65,7 +65,7 @@ public class MappingDataSource implements DataSource {
 					switch (state) {
 						case READ_D:{
 							final byte b = buffer.get();
-							log.info("read_d:"+b+",charValue:"+(char)b+"position:"+buffer.position());
+							log.info("read_d:"+b+",charValue:"+(char)b+",position:"+buffer.position());
 							if(b == '\r'){
 								state = DecodeLineState.READ_R;
 							}else{
