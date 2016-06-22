@@ -18,6 +18,7 @@ import com.huang.rpc.client.NioClient;
 import com.huang.rpc.common.Options;
 import com.huang.rpc.datasource.DataPersistence;
 import com.huang.rpc.datasource.impl.BucketDataPersistence;
+import com.huang.rpc.datasource.impl.PageDataPersistence;
 
 public class ClientMain {
 	
@@ -27,7 +28,7 @@ public class ClientMain {
 		
 		final long startTime = System.currentTimeMillis();
 		
-		File dataFile = new File(ClientMain.class.getClassLoader().getResource(args[3]).getPath());
+		File dataFile = new File(args[3]);
 		
 		File optionFile = new File(ClientMain.class.getClassLoader().getResource(args[4]).getPath());
 		
@@ -45,9 +46,7 @@ public class ClientMain {
 	    	return t;
 	    });
 	    
-	    final DataPersistence dataPersistence = new BucketDataPersistence(config.getDataFile());
-	    dataPersistence.init();
-	    
+	    final DataPersistence dataPersistence = new PageDataPersistence(config.getDataFile());
 	    //异步初始化数据源
 	    executorService.execute(()->{
 	    	try{
@@ -102,7 +101,7 @@ public class ClientMain {
 	}
 	
 	public static void main(String... args) throws IOException, InterruptedException {
-		args = new String[]{"hello world","127.0.0.1","9999","newdata.txt","mycode.properties"};
+		args = new String[]{"hello world","127.0.0.1","9999","newdata2.txt","mycode.properties"};
     	startClient(args);
 	}
 	
