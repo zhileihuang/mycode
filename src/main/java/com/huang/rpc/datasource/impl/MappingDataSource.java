@@ -63,11 +63,15 @@ public class MappingDataSource implements DataSource {
 				DecodeLineState state = DecodeLineState.READ_D;
 				while(buffer.hasRemaining()){
 					switch (state) {
-						case READ_D:{
+						case READ_D:{ //初始状态，可能读取到别的状态的值，需要判断
 							final byte b = buffer.get();
 //							log.info("read_d:"+b+",charValue:"+(char)b+",position:"+buffer.position());
 							if(b == '\r'){
 								state = DecodeLineState.READ_R;
+								break;
+							}else if(b == '\n'){
+								state = DecodeLineState.READ_N;
+								break;
 							}else{
 								dataBuffer.put(b);
 								break;
@@ -75,17 +79,13 @@ public class MappingDataSource implements DataSource {
 						}
 						case READ_R:{
 							//可能存在两个内存之间有一行数据
-							if(buffer.hasRemaining()){
-								final byte b = buffer.get();
+							final byte b = buffer.get();
 //								log.info("read_d:"+b+",charValue:"+(char)b+"position:"+buffer.position());
-								if(b!='\n'){
-									throw new IOException("illegal format, \\n did not behind \\r, b=" + b);
-								}
-								state = DecodeLineState.READ_N;
-							}else{
-								log.warn("buffer has no remaining,need next page");
-								break;
+							if(b!='\n'){
+								throw new IOException("illegal format, \\n did not behind \\r, b=" + b);
 							}
+							state = DecodeLineState.READ_N;
+							break;
 						}
 						case READ_N:{
 							state = DecodeLineState.READ_D;
@@ -93,7 +93,7 @@ public class MappingDataSource implements DataSource {
 							final byte[] data = new byte[dataBuffer.limit()];
 							dataBuffer.get(data);
 							final Row row = new Row(lineCounter++, data);
-//							log.info("offer row:"+lineCounter);
+//							log.info("offer row:"+row.toString());
 							rowQueue.offer(row);
 							dataBuffer.clear();
 							break;

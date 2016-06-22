@@ -1,7 +1,5 @@
 package com.huang.rpc.datasource;
 
-import java.util.Arrays;
-
 //一行数据
 public class Row {
 	private int lineNum;
@@ -32,7 +30,11 @@ public class Row {
 
 	@Override
 	public String toString() {
-		return "Row [lineNum=" + lineNum + ", data=" + Arrays.toString(data) + "]";
+		StringBuffer sb = new StringBuffer();
+		for(int i = 0;i<data.length;i++){
+			sb.append((char)data[i]);
+		}
+		return "Row [lineNum=" + lineNum + ", data=" + sb.toString() + "]";
 	}
 	
 }

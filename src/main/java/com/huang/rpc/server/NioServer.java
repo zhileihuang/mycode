@@ -63,10 +63,10 @@ import com.huang.rpc.datasource.Row;
 //so_keepalive选项在默认情况下是关闭的，可以使用setKeepAlive(true) 打开
 
 //backlog
-//
-//
-//
-//
+//服务端socket处理客户端socket连接是需要一定时间的。serversocket有一个队列，存放还没有来得及处理的客户端socket,
+//这个队列的容量就是backlog的含义。如果队列已经被客户端socket占满了，如果还有新的连接过来，那么serversocket会拒绝
+//新的连接。也就是说backlog提供了容量限制功能，避免太多的客户端socket占用太多的服务器资源。一旦accept，则会从队列中
+//取出一个连接进行处理
 
 public class NioServer {
 
@@ -134,7 +134,15 @@ public class NioServer {
 		socket.setReceiveBufferSize(options.getServerChildSocketReceiverBufferSize());
 		socket.setSendBufferSize(options.getServerChildSocketSendBufferSize());
 		socket.setSoTimeout(options.getServerChildSocketTimeout());
+		
+		//参数：connectionTime:表示用最少时间建立连接。
+		//参数：latency:表示最小延迟。
+		//参数bandwidth:表示最高带宽。
+		//假设：setPerformancePreferences(2,1,3)
+		//则其表示最高带宽优先，其次是最少连接时间，最后是最小延迟
 		socket.setPerformancePreferences(options.getServerChildPerformancePreferences()[0], options.getServerChildPerformancePreferences()[1], options.getServerChildPerformancePreferences()[2]);
+		
+		//设置发送数据包头的流量类型或服务类型字段，默认为8，意为吞吐量最大化传输   
 		socket.setTrafficClass(options.getServerChildTrafficClass());
 
 	}
