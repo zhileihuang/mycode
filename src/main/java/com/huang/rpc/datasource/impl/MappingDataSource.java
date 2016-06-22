@@ -54,10 +54,11 @@ public class MappingDataSource implements DataSource {
 			long pos = 0;
 			final ByteBuffer dataBuffer = ByteBuffer.allocate(1024);
 			final long fileSize = fileChannel.size();
+			MappedByteBuffer buffer = null;
 			while(pos<fileSize){
 				final long loadStartTime = System.currentTimeMillis();
 				// TODO MappedByteBuffer
-				final MappedByteBuffer buffer = fileChannel.map(FileChannel.MapMode.READ_ONLY,pos,fixBufferSize(pos, fileSize)).load();
+				buffer = fileChannel.map(FileChannel.MapMode.READ_ONLY,pos,fixBufferSize(pos, fileSize)).load();
 				final long loadEndTime = System.currentTimeMillis();
 				log.info("[datasource] loading...,pos={},size={},cost={}",new Object[]{pos,buffer.capacity(),(loadEndTime - loadStartTime)});
 				DecodeLineState state = DecodeLineState.READ_D;
@@ -74,12 +75,18 @@ public class MappingDataSource implements DataSource {
 							}
 						}
 						case READ_R:{
-							final byte b = buffer.get();
-							log.info("read_d:"+b+",charValue:"+(char)b+"position:"+buffer.position());
-							if(b!='\n'){
-								throw new IOException("illegal format, \\n did not behind \\r, b=" + b);
+							//可能存在两个内存之间有一行数据
+							if(buffer.hasRemaining()){
+								final byte b = buffer.get();
+//								log.info("read_d:"+b+",charValue:"+(char)b+"position:"+buffer.position());
+								if(b!='\n'){
+									throw new IOException("illegal format, \\n did not behind \\r, b=" + b);
+								}
+								state = DecodeLineState.READ_N;
+							}else{
+								log.warn("buffer has no remaining,need next page");
+								break;
 							}
-							state = DecodeLineState.READ_N;
 						}
 						case READ_N:{
 							state = DecodeLineState.READ_D;
@@ -87,6 +94,7 @@ public class MappingDataSource implements DataSource {
 							final byte[] data = new byte[dataBuffer.limit()];
 							dataBuffer.get(data);
 							final Row row = new Row(lineCounter++, data);
+//							log.info("offer row:"+lineCounter);
 							rowQueue.offer(row);
 							dataBuffer.clear();
 							break;
@@ -96,11 +104,13 @@ public class MappingDataSource implements DataSource {
 					}
 				}
 				pos+=buffer.capacity();
-				log.info("unmap buffer:"+buffer.capacity());
-				Utils.unmap(buffer);
-				log.info("start gc:");
-				Runtime.getRuntime().gc();
+//				log.info("unmap buffer:"+buffer.capacity());
+//				Utils.unmap(buffer);
+//				log.info("start gc:");
+//				Runtime.getRuntime().gc();
 			}
+			Runtime.getRuntime().gc();
+			Utils.unmap(buffer);
 		}//try
 		final long endTime = System.currentTimeMillis();
 		log.info("[datasource] was inited,cost={}",(endTime - startTime));
@@ -121,10 +131,10 @@ public class MappingDataSource implements DataSource {
 	private long fixBufferSize(long pos, long fileSize) {
 		if (pos + BUFFER_SIZE >= fileSize) {
 			long ret = fileSize - pos;
-			log.info("fixBufferSize:"+ret);
+//			log.info("fixBufferSize:"+ret);
 			return ret;
 		} else {
-			log.info("fixBufferSize:"+BUFFER_SIZE);
+//			log.info("fixBufferSize:"+BUFFER_SIZE);
 			return BUFFER_SIZE;
 		}
 	}
