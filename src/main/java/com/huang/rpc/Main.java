@@ -30,10 +30,13 @@ public class Main {
 	public static void startServer(String ...args) throws IOException,InterruptedException{
 		
 		final ServerConfig config = new ServerConfig();
-		config.setDataFile(new File(args[1]));
+		
+		File dataFile = new File(Main.class.getClassLoader().getResource(args[1]).getPath());
+		
+		config.setDataFile(dataFile);
 		config.setPort(Integer.valueOf(args[2]));
 		
-		final Options options = new Options(new File(args[3]));
+		final Options options = new Options(new File(Main.class.getClassLoader().getResource(args[3]).getPath()));
 		final DataSource dataSource = new MappingDataSource(config.getDataFile());
 		
 		dataSource.init();
