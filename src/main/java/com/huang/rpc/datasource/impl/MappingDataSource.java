@@ -75,7 +75,7 @@ public class MappingDataSource implements DataSource {
 						}
 						case READ_R:{
 							final byte b = buffer.get();
-//							log.info("read_d:"+b+",charValue:"+(char)b+"position:"+buffer.position());
+							log.info("read_d:"+b+",charValue:"+(char)b+"position:"+buffer.position());
 							if(b!='\n'){
 								throw new IOException("illegal format, \\n did not behind \\r, b=" + b);
 							}
@@ -120,8 +120,11 @@ public class MappingDataSource implements DataSource {
 
 	private long fixBufferSize(long pos, long fileSize) {
 		if (pos + BUFFER_SIZE >= fileSize) {
-			return fileSize - pos;
+			long ret = fileSize - pos;
+			log.info("fixBufferSize:"+ret);
+			return ret;
 		} else {
+			log.info("fixBufferSize:"+BUFFER_SIZE);
 			return BUFFER_SIZE;
 		}
 	}
