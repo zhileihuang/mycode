@@ -24,9 +24,15 @@ public class ClientMain {
 	private static final Logger log = LoggerFactory.getLogger(ClientMain.class);
 	
 	public static void startClient(String ...args) throws IOException, InterruptedException{
+		
 		final long startTime = System.currentTimeMillis();
-		final ClientConfig config = new ClientConfig(new File(args[3]), new InetSocketAddress(args[1], Integer.valueOf(args[2])));
-	    final Options options = new Options(new File(args[4]));
+		
+		File dataFile = new File(ClientMain.class.getClassLoader().getResource(args[3]).getPath());
+		
+		File optionFile = new File(ClientMain.class.getClassLoader().getResource(args[4]).getPath());
+		
+		final ClientConfig config = new ClientConfig(dataFile, new InetSocketAddress(args[1], Integer.valueOf(args[2])));
+	    final Options options = new Options(optionFile);
 	    final int worksNum = options.getClientWorkNumbers();
 	    
 	    final CountDownLatch countDown = new CountDownLatch(worksNum);
@@ -96,7 +102,7 @@ public class ClientMain {
 	}
 	
 	public static void main(String... args) throws IOException, InterruptedException {
-		args = new String[]{"hello world","newdata.txt","9999","mycode.properties"};
+		args = new String[]{"hello world","127.0.0.1","9999","newdata.txt","mycode.properties"};
     	startClient(args);
 	}
 	

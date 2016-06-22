@@ -178,6 +178,7 @@ public class NioServer {
 								socketChannel.read(buffer);
 								buffer.flip();
 								while (true) {
+									//先获取一个长度
 									if (buffer.remaining() < Integer.BYTES) { //半包，不处理，直接返回
 										break;
 									}
