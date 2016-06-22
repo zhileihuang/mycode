@@ -19,7 +19,7 @@ public class MappingDataSource implements DataSource {
 
 	private static final Logger log = LoggerFactory.getLogger(MappingDataSource.class);
 
-	private static final int BUFFER_SIZE = 4*1024; //4k 操作系统分页大小
+	private static final int BUFFER_SIZE = 4*1024; //4k的倍数 操作系统分页大小
 
 	private final File dataFile;
 
