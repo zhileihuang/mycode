@@ -62,7 +62,11 @@ import com.huang.rpc.datasource.Row;
 //如果将socket选项关闭，客户端socket在服务器无效的情况下可能会长时间不会关闭。
 //so_keepalive选项在默认情况下是关闭的，可以使用setKeepAlive(true) 打开
 
-
+//backlog
+//
+//
+//
+//
 
 public class NioServer {
 
