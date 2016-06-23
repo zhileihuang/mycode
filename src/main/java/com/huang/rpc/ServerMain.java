@@ -5,9 +5,10 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.LockSupport;
+
 import com.huang.rpc.common.Options;
 import com.huang.rpc.datasource.DataSource;
-import com.huang.rpc.datasource.impl.MappingDataSource;
+import com.huang.rpc.datasource.impl.PageDataSource;
 import com.huang.rpc.server.NioServer;
 import com.huang.rpc.server.ServerConfig;
 
@@ -23,7 +24,7 @@ public class ServerMain {
 		config.setPort(Integer.valueOf(args[2]));
 		
 		final Options options = new Options(new File(ServerMain.class.getClassLoader().getResource(args[3]).getPath()));
-		final DataSource dataSource = new MappingDataSource(config.getDataFile());
+		final DataSource dataSource = new PageDataSource(config.getDataFile());
 		
 		dataSource.init();
 		final ExecutorService executorService = Executors.newCachedThreadPool();
