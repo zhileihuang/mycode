@@ -164,6 +164,7 @@ public class PageDataSource implements DataSource {
 					// 2.将文件缓存刷入页码
 					final Page page = pageTables[nextSwitchPageTableIndex];
 
+					// 如果已经被初始化后的当前页还没被读完,休眠等待被唤醒
 					if (page.isInit && page.readCount.get() < page.rowCount) {
 						pageSwitchLock.lock();
 						try {
@@ -184,7 +185,8 @@ public class PageDataSource implements DataSource {
 
 						final ByteBuffer tempBuffer = ByteBuffer.allocate(PAGE_ROW_SIZE);
 
-						FILL_PAGE_LOOP: while (true) {
+						FILL_PAGE_LOOP: 
+						while (true) {
 
 							if (null == mappedBufer || !mappedBufer.hasRemaining()) {
 								final long fixLength = (fileOffset + BUFFER_SIZE >= fileSize) ? fileSize - fileOffset : BUFFER_SIZE;
@@ -286,7 +288,7 @@ public class PageDataSource implements DataSource {
 
 	class Page {
 		volatile int pageNum;
-		volatile int rowCount = 0;
+		volatile int rowCount = 0; //总行数
 		// 已被读取行数
 		AtomicInteger readCount = new AtomicInteger(0);
 		volatile boolean isLast = false;
