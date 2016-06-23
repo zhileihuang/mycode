@@ -144,145 +144,144 @@ public class PageDataSource implements DataSource {
 				pageTables[i] = page;
 			}
 
-			// 下一次要替换掉的页码表编号
-				int nextSwitchPageTableIndex = 0;
+		    // 下一次要替换掉的页码表编号
+			int nextSwitchPageTableIndex = 0;
 
-				// 文件读取偏移量
-				long fileOffset = 0;
+			// 文件读取偏移量
+			long fileOffset = 0;
 
-				try (final FileChannel fileChannel = new RandomAccessFile(dataFile, "r").getChannel()) {
-					final long fileSize = fileChannel.size();
-					int lineCounter = 0;
-					MappedByteBuffer mappedBufer = null;
+			try (final FileChannel fileChannel = new RandomAccessFile(dataFile, "r").getChannel()) {
+				final long fileSize = fileChannel.size();
+				int lineCounter = 0;
+				MappedByteBuffer mappedBufer = null;
 
-					DecodeLineState state = DecodeLineState.READ_D;
+				DecodeLineState state = DecodeLineState.READ_D;
 
-					while (fileOffset < fileSize) {
+				while (fileOffset < fileSize) {
 
-						// 遍历页码表，主要做两件事
-						// 1.顺序的更换页码
-						// 2.将文件缓存刷入页码
-						final Page page = pageTables[nextSwitchPageTableIndex];
+					// 遍历页码表，主要做两件事
+					// 1.顺序的更换页码
+					// 2.将文件缓存刷入页码
+					final Page page = pageTables[nextSwitchPageTableIndex];
 
-						if (page.isInit && page.readCount.get() < page.rowCount) {
-							pageSwitchLock.lock();
-							try {
-								pageSwitchWakeUpCondition.await();
-								continue;
-							} catch (Exception e) {
-								Thread.currentThread().interrupt();
-							} finally {
-								pageSwitchLock.unlock();
-							}
+					if (page.isInit && page.readCount.get() < page.rowCount) {
+						pageSwitchLock.lock();
+						try {
+							pageSwitchWakeUpCondition.await();
+							continue;
+						} catch (Exception e) {
+							Thread.currentThread().interrupt();
+						} finally {
+							pageSwitchLock.unlock();
 						}
-
-						if (!page.isInit || page.readCount.get() == page.rowCount) {
-
-							final ByteBuffer dataBuffer = ByteBuffer.wrap(page.data);
-
-							int rowIdx = 0;
-
-							final ByteBuffer tempBuffer = ByteBuffer.allocate(PAGE_ROW_SIZE);
-
-							FILL_PAGE_LOOP: while (true) {
-
-								if (null == mappedBufer || !mappedBufer.hasRemaining()) {
-									final long fixLength = (fileOffset + BUFFER_SIZE >= fileSize) ? fileSize - fileOffset : BUFFER_SIZE;
-									if (null != mappedBufer) {
-										Utils.unmap(mappedBufer);
-									}
-									if (fixLength > 0) {
-										mappedBufer = fileChannel.map(MapMode.READ_ONLY, fileOffset, fixLength).load();
-									}
-								}
-								if (!mappedBufer.hasRemaining()) {
-									page.isLast = true;
-									break;
-								}
-
-								while (mappedBufer.hasRemaining()) {
-									switch (state) {
-										case READ_D: {
-											final byte b = mappedBufer.get();
-											fileOffset++;
-											if (b == '\r') {
-												state = DecodeLineState.READ_R;
-											} else {
-												tempBuffer.put(b);
-												break;
-											}
-										}
-										case READ_R: {
-											final byte b = mappedBufer.get();
-											fileOffset++;
-											if (b != '\n') {
-												throw new IOException("illegal format,\\n did not behind \\r, b=" + b);
-											}
-											state = DecodeLineState.READ_N;
-										}
-										case READ_N: {
-											state = DecodeLineState.READ_D;
-											tempBuffer.flip();
-											final int dateLength = tempBuffer.limit();
-											dataBuffer.putInt(lineCounter++);
-											final byte[] _data = new byte[dateLength];
-											tempBuffer.get(_data);
-											final byte[] __data = Utils.process(_data);
-											dataBuffer.putInt(__data.length);
-											dataBuffer.put(__data);
-											tempBuffer.clear();
-	
-											if (++rowIdx == PAGE_ROWS_NUM) {
-												break FILL_PAGE_LOOP;
-											}
-	
-											int offsetOfRow = rowIdx * PAGE_ROW_SIZE;
-											dataBuffer.position(offsetOfRow);
-											break;
-	
-										}
-										default:
-											throw new IOException("init failed, illegal state=" + state);
-									}
-								}
-
-							}
-							
-							page.rowCount = rowIdx;
-							page.readCount.set(0);
-							log.info("page.pagenum={} was switched.fileOffset={},fileSize={},page.rowCount={};",
-									 new Object[]{page.pageNum,fileOffset,fileSize,page.rowCount});
-							
-							if(fileOffset == fileSize){
-								page.isLast = true;
-								log.info("page.pagenum={} is last,page.readcount={}",page.pageNum,page.readCount.get());
-							}
-							
-							if(page.isInit){
-								page.pageNum+=PAGE_TABLE_SIZE;
-							}else{
-								page.isInit = true;
-							}
-							nextSwitchPageTableIndex = (nextSwitchPageTableIndex+1)%PAGE_TABLE_SIZE;
-						}
-
 					}
 
-				} catch (Exception e) {
-					log.warn("mapping file={} failed.",dataFile,e);
-				}
-				
-				log.info("PageDataSource(file:{}) was arrive EOF.",dataFile);
+					if (!page.isInit || page.readCount.get() == page.rowCount) {
 
-			},"PageDataSource");
+						final ByteBuffer dataBuffer = ByteBuffer.wrap(page.data);
+
+						int rowIdx = 0;
+
+						final ByteBuffer tempBuffer = ByteBuffer.allocate(PAGE_ROW_SIZE);
+
+						FILL_PAGE_LOOP: while (true) {
+
+							if (null == mappedBufer || !mappedBufer.hasRemaining()) {
+								final long fixLength = (fileOffset + BUFFER_SIZE >= fileSize) ? fileSize - fileOffset : BUFFER_SIZE;
+								if (null != mappedBufer) {
+									Utils.unmap(mappedBufer);
+								}
+								if (fixLength > 0) {
+									mappedBufer = fileChannel.map(MapMode.READ_ONLY, fileOffset, fixLength).load();
+								}
+							}
+							if (!mappedBufer.hasRemaining()) {
+								page.isLast = true;
+								break;
+							}
+
+							while (mappedBufer.hasRemaining()) {
+								switch (state) {
+								case READ_D: {
+									final byte b = mappedBufer.get();
+									fileOffset++;
+									if (b == '\r') {
+										state = DecodeLineState.READ_R;
+									} else {
+										tempBuffer.put(b);
+										break;
+									}
+								}
+								case READ_R: {
+									final byte b = mappedBufer.get();
+									fileOffset++;
+									if (b != '\n') {
+										throw new IOException("illegal format,\\n did not behind \\r, b=" + b);
+									}
+									state = DecodeLineState.READ_N;
+								}
+								case READ_N: {
+									state = DecodeLineState.READ_D;
+									tempBuffer.flip();
+									final int dateLength = tempBuffer.limit();
+									dataBuffer.putInt(lineCounter++);
+									final byte[] _data = new byte[dateLength];
+									tempBuffer.get(_data);
+									final byte[] __data = Utils.process(_data);
+									dataBuffer.putInt(__data.length);
+									dataBuffer.put(__data);
+									tempBuffer.clear();
+
+									if (++rowIdx == PAGE_ROWS_NUM) {
+										break FILL_PAGE_LOOP;
+									}
+
+									int offsetOfRow = rowIdx * PAGE_ROW_SIZE;
+									dataBuffer.position(offsetOfRow);
+									break;
+
+								}
+								default:
+									throw new IOException("init failed, illegal state=" + state);
+								}
+							}
+
+						}
+
+						page.rowCount = rowIdx;
+						page.readCount.set(0);
+						log.info("page.pagenum={} was switched.fileOffset={},fileSize={},page.rowCount={};", new Object[] { page.pageNum, fileOffset, fileSize, page.rowCount });
+
+						if (fileOffset == fileSize) {
+							page.isLast = true;
+							log.info("page.pagenum={} is last,page.readcount={}", page.pageNum, page.readCount.get());
+						}
+
+						if (page.isInit) {
+							page.pageNum += PAGE_TABLE_SIZE;
+						} else {
+							page.isInit = true;
+						}
+						nextSwitchPageTableIndex = (nextSwitchPageTableIndex + 1) % PAGE_TABLE_SIZE;
+					}
+
+				}
+
+			} catch (Exception e) {
+				log.warn("mapping file={} failed.", dataFile, e);
+			}
+
+			log.info("PageDataSource(file:{}) was arrive EOF.", dataFile);
+
+		}, "PageDataSource");
 		pageSwitcher.setDaemon(true);
 		pageSwitcher.start();
-		log.info("PageDataSource(file:{}) was inited.",dataFile);
+		log.info("PageDataSource(file:{}) was inited.", dataFile);
 	}
 
 	@Override
 	public void destroy() throws IOException {
-		log.info("PageDataSource(file:{}) was destroyed.",dataFile);
+		log.info("PageDataSource(file:{}) was destroyed.", dataFile);
 	}
 
 	class Page {
