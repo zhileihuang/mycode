@@ -83,15 +83,15 @@ public class PageDataSource implements DataSource {
 					return row;
 				}
 			}
-
+            //当前页数据读取完毕
 			if (readCount == rowCount) {
 				continue;
 			}
-
+			//当前数据被其他线程读取了，则返回
 			if (!page.readCount.compareAndSet(readCount, readCount + 1)) {
 				continue;
 			}
-
+			
 			final int offsetOfRow = readCount * PAGE_ROW_SIZE;
 
 			final ByteBuffer byteBuffer = ByteBuffer.wrap(page.data, offsetOfRow, PAGE_ROW_SIZE);
@@ -100,6 +100,7 @@ public class PageDataSource implements DataSource {
 			final byte[] data = new byte[validByteCount];
 			byteBuffer.get(data);
 
+			//当前页数据读取完毕，则需要通知线程，进行下一页的数据载入
 			if (page.readCount.get() == rowCount) {
 				if (page.isLast) {
 					isEOF = true;
@@ -209,6 +210,10 @@ public class PageDataSource implements DataSource {
 									fileOffset++;
 									if (b == '\r') {
 										state = DecodeLineState.READ_R;
+										break;
+									}else if(b == '\n'){
+										state = DecodeLineState.READ_N;
+										break;
 									} else {
 										tempBuffer.put(b);
 										break;
@@ -219,16 +224,21 @@ public class PageDataSource implements DataSource {
 									fileOffset++;
 									if (b != '\n') {
 										throw new IOException("illegal format,\\n did not behind \\r, b=" + b);
+									}else{
+										state = DecodeLineState.READ_N;
+										break;
 									}
-									state = DecodeLineState.READ_N;
 								}
 								case READ_N: {
 									state = DecodeLineState.READ_D;
 									tempBuffer.flip();
 									final int dateLength = tempBuffer.limit();
-									dataBuffer.putInt(lineCounter++);
+									dataBuffer.putInt(lineCounter++); //第几行
 									final byte[] _data = new byte[dateLength];
 									tempBuffer.get(_data);
+									
+									log.info("data:"+Utils.toChars(_data));
+									
 									final byte[] __data = Utils.process(_data);
 									dataBuffer.putInt(__data.length);
 									dataBuffer.put(__data);
@@ -286,6 +296,10 @@ public class PageDataSource implements DataSource {
 		log.info("PageDataSource(file:{}) was destroyed.", dataFile);
 	}
 
+	/**
+	 *一行256B
+	 *总共10行 
+	 */
 	class Page {
 		volatile int pageNum;
 		volatile int rowCount = 0; //总行数

@@ -54,4 +54,12 @@ public class Utils {
 		});
 	}
 	
+	public static String toChars(byte[] data){
+		StringBuffer sb = new StringBuffer();
+		for(int i = 0;i<data.length;i++){
+			sb.append((char)data[i]);
+		}
+		return sb.toString();
+	}
+	
 }
