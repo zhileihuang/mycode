@@ -70,6 +70,7 @@ public class ClientMain {
 	    			client.connect();
 	    			clients.add(client);
 	    			client.work();
+	    			log.info("client work");
 	    		}catch (Exception e) {
 	    			log.warn("client connect failed.",e);
 	    		}

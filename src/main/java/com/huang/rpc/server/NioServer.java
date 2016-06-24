@@ -180,7 +180,10 @@ public class NioServer {
 								while (true) { //有几个int，一次读取完
 									//先获取一个长度
 									if (buffer.remaining() < Integer.BYTES) { //半包，不处理，直接返回
+										log.info("server half packet");
 										break;
+									}else{
+										log.info("server receive a request");
 									}
 									final int type = buffer.getInt();
 									if (type != Constant.PRO_REQ_GETDATA) {

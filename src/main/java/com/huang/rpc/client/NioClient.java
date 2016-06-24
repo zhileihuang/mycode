@@ -104,7 +104,7 @@ public class NioClient {
 				
 				while(isRunning){
 					//超过最大值了
-					if(buffer.remaining()>=Integer.MAX_VALUE){
+					if(buffer.remaining()>4*10){ //10个请求打包发送
 						buffer.putInt(Constant.PRO_REQ_GETDATA);
 						continue;
 					}else{
@@ -119,9 +119,10 @@ public class NioClient {
 						final SelectionKey key = iter.next();
 						iter.remove();
 						if(key.isWritable()){
+							log.info("send size:"+buffer.limit());
 							socketChannel.write(buffer);
 							buffer.compact();
-							key.interestOps(key.interestOps()&~SelectionKey.OP_WRITE);
+							key.interestOps(key.interestOps()&~SelectionKey.OP_WRITE); //取消注册write事件
 						}
 					}
 					
@@ -179,7 +180,7 @@ public class NioClient {
 								hasMore = false;
 								switch (state) {
 									case READ_TYPE:{
-										if(buffer.remaining()<Integer.MAX_VALUE){
+										if(buffer.remaining()<Integer.MAX_VALUE){ //半包，等待下次处理
 											break;
 										}
 										type = buffer.getInt();

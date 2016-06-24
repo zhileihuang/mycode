@@ -1,5 +1,7 @@
 package com.huang.rpc;
 
+import java.nio.channels.SelectionKey;
+
 import org.junit.Test;
 
 public class ByteTest {
@@ -12,6 +14,14 @@ public class ByteTest {
 		System.out.println(n);
 		byte t = '\t';
 		System.out.println(t);
+	}
+	
+	@Test
+	public void test2(){
+		System.out.println(SelectionKey.OP_WRITE); //4
+		System.out.println(SelectionKey.OP_READ);//1
+		System.out.println(SelectionKey.OP_WRITE&~SelectionKey.OP_WRITE); //0
+		System.out.println(SelectionKey.OP_READ&~SelectionKey.OP_WRITE); //1
 	}
 
 }
