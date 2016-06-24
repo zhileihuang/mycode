@@ -87,7 +87,7 @@ public class PageDataSource implements DataSource {
 			if (readCount == rowCount) {
 				continue;
 			}
-			//当前数据被其他线程读取了，则返回
+			//当前数据被其他线程读取了，自旋获取id
 			if (!page.readCount.compareAndSet(readCount, readCount + 1)) {
 				continue;
 			}
@@ -177,7 +177,8 @@ public class PageDataSource implements DataSource {
 							pageSwitchLock.unlock();
 						}
 					}
-
+					
+					//填满一页数据
 					if (!page.isInit || page.readCount.get() == page.rowCount) {
 
 						final ByteBuffer dataBuffer = ByteBuffer.wrap(page.data);
@@ -240,8 +241,8 @@ public class PageDataSource implements DataSource {
 									log.info("data:"+Utils.toChars(_data));
 									
 									final byte[] __data = Utils.process(_data);
-									dataBuffer.putInt(__data.length);
-									dataBuffer.put(__data);
+									dataBuffer.putInt(__data.length); //长度
+									dataBuffer.put(__data); //数据
 									tempBuffer.clear();
 
 									if (++rowIdx == PAGE_ROWS_NUM) {
@@ -269,7 +270,7 @@ public class PageDataSource implements DataSource {
 							log.info("page.pagenum={} is last,page.readcount={}", page.pageNum, page.readCount.get());
 						}
 
-						if (page.isInit) {
+						if (page.isInit) { //重用page页，则pageNum+=PAGE_TABLE_SIZE
 							page.pageNum += PAGE_TABLE_SIZE;
 						} else {
 							page.isInit = true;
