@@ -177,7 +177,7 @@ public class NioServer {
 							if (key.isReadable()) { //获取数据
 								socketChannel.read(buffer);
 								buffer.flip();
-								while (true) {
+								while (true) { //有几个int，一次读取完
 									//先获取一个长度
 									if (buffer.remaining() < Integer.BYTES) { //半包，不处理，直接返回
 										break;
@@ -191,7 +191,6 @@ public class NioServer {
 								buffer.compact();
 							}
 						}
-
 					}
 				} catch (Exception e) {
 					log.info("{} was disconnect for read.", socketChannel.socket());
