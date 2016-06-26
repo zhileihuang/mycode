@@ -148,7 +148,11 @@ public class Server {
 				try (final Selector selector = Selector.open()) {
 					socketChannel.register(selector, SelectionKey.OP_WRITE);
 					while (isRunning) {
-						if(buffer.remaining()<100){
+						int req = reqCounter.decrementAndGet();
+						String res = "res:"+req;
+						int currentLen = buffer.remaining()+res.getBytes().length+4;
+						if(currentLen<100){
+							log.info("remaining size less 100:"+currentLen);
 							selector.select();
 							final Iterator<SelectionKey> iter = selector.selectedKeys().iterator();
 							while (iter.hasNext()) {
@@ -159,12 +163,11 @@ public class Server {
 										writableByteChannel.write(buffer);
 									}
 									buffer.compact();
+									log.info("write a buffer to client");
 								}
 							}
 							break;
 						}else if(reqCounter.get()>0){
-							int req = reqCounter.decrementAndGet();
-							String res = "res:"+req;
 							buffer.putInt(res.getBytes().length);
 							buffer.put(res.getBytes());
 						}
