@@ -39,6 +39,7 @@ public class Server {
 	public void startup() throws IOException{
 		serverSocketChannel = getServerSocketChannel();
 		serverSocketChannel.bind(new InetSocketAddress(port),100);
+		new Thread(accepter).start();
 		log.info("server[port={}] startup successed.",port);
 	}
 	

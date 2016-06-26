@@ -36,6 +36,7 @@ public class Client {
 	public void connect() throws IOException {
 		socketChannel = getAndConfigSocketChannel();
 		socketChannel.connect(new InetSocketAddress(serverPort));
+//		socketChannel.socket().setSendBufferSize(100);
 		try (final Selector selector = Selector.open()) {
 			socketChannel.register(selector, SelectionKey.OP_CONNECT);
 			WAITING_FOR_CONNECT: for (;;) {
@@ -100,6 +101,7 @@ public class Client {
 							for(int i = 0;i<data.length;i++){
 								buffer.clear();
 								buffer.put(data[i]);
+								buffer.flip();
 								while(buffer.hasRemaining()){
 									socketChannel.write(buffer);
 								}
