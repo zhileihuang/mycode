@@ -111,8 +111,11 @@ public class Server {
 							iter.remove();
 
 							if (key.isReadable()) { //获取数据
+								log.info("before read:"+buffer.position()+","+buffer.limit()+","+buffer.remaining());
 								socketChannel.read(buffer);
+								log.info("before flip:"+buffer.position()+","+buffer.limit()+","+buffer.remaining());
 								buffer.flip();
+								log.info("after flip:"+buffer.position()+","+buffer.limit()+","+buffer.remaining());
 								while (true) { //有几个int，一次读取完
 									//先获取一个长度
 									if (buffer.remaining() < Integer.BYTES) { //半包，不处理，直接返回
@@ -121,9 +124,11 @@ public class Server {
 									}else{
 										final int req = buffer.getInt();
 										reqCounter.getAndIncrement();
-										log.info("req:"+req);
+										log.info("client req:"+req);
 									}
 								}
+								
+								//由于有compact存在，则每次半包后，可以回归到原始状态。
 								buffer.compact();
 							}
 						}
