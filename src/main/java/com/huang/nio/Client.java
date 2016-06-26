@@ -89,7 +89,7 @@ public class Client {
 						final SelectionKey key = iter.next();
 						iter.remove();
 						if (key.isWritable()) {
-							log.info("send size:" + buffer.limit());
+//							log.info("send size:" + buffer.limit());
 							int reqNum = req.getAndIncrement();
 							buffer.putInt(reqNum);
 							buffer.flip();
@@ -157,7 +157,7 @@ public class Client {
 									switch (state) {
 										case READ_LEN:{
 											if(buffer.remaining()<Integer.BYTES){
-												log.info("client receive a half pack");
+//												log.info("client receive a half pack");
 												break;
 											}else{
 												len = buffer.getInt();
@@ -166,7 +166,7 @@ public class Client {
 										}
 										case READ_BYTES:{
 											if(buffer.remaining()<len){
-												log.info("client receive two a half pack:"+len);
+//												log.info("client receive two a half pack:"+len);
 												break;
 											}else{
 												final byte[] data = new byte[len];

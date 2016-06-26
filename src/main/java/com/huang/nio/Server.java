@@ -86,7 +86,7 @@ public class Server {
 	private class ChildHandler {
 
 		private final SocketChannel socketChannel;
-		private final AtomicInteger reqCounter = new AtomicInteger(0);
+		private final AtomicInteger reqCounter = new AtomicInteger(1);
 
 		private ChildHandler(SocketChannel socketChannel) {
 			this.socketChannel = socketChannel;
@@ -116,7 +116,7 @@ public class Server {
 								while (true) { //有几个int，一次读取完
 									//先获取一个长度
 									if (buffer.remaining() < Integer.BYTES) { //半包，不处理，直接返回
-										log.info("server half packet");
+//										log.info("server half packet");
 										break;
 									}else{
 										final int req = buffer.getInt();
@@ -140,18 +140,21 @@ public class Server {
 			public void run() {
 				Thread.currentThread().setName("child-" + socketChannel.socket() + "-writer");
 				Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-
-				final ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
-
+				final ByteBuffer buffer = ByteBuffer.allocateDirect(128);
 				final WritableByteChannel writableByteChannel = socketChannel;
-
 				try (final Selector selector = Selector.open()) {
 					socketChannel.register(selector, SelectionKey.OP_WRITE);
 					while (isRunning) {
-						int req = reqCounter.decrementAndGet();
+						int req = reqCounter.get();
+						if(req<0){
+							Thread.sleep(100);
+						}else{
+							req = reqCounter.decrementAndGet();
+						}
 						String res = "res:"+req;
-						int currentLen = buffer.remaining()+res.getBytes().length+4;
-						if(currentLen<100){
+						int currentLen = buffer.remaining()-res.getBytes().length-4;
+						if(currentLen<0){
+							
 							log.info("remaining size less 100:"+currentLen);
 							selector.select();
 							final Iterator<SelectionKey> iter = selector.selectedKeys().iterator();
@@ -159,6 +162,7 @@ public class Server {
 								final SelectionKey key = iter.next();
 								iter.remove();
 								if (key.isWritable()) {
+									buffer.flip();
 									while (buffer.hasRemaining()) {
 										writableByteChannel.write(buffer);
 									}
