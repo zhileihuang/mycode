@@ -41,12 +41,12 @@ public class NIOBugTest {
                 // handle in a proper way
                 break;
             }
-            Set readyKeys = selector.selectedKeys();
-            Iterator iterator = readyKeys.iterator();
+            Set<SelectionKey> readyKeys = selector.selectedKeys();
+            Iterator<SelectionKey> iterator = readyKeys.iterator();
             // 该值将永远是假的，代码将持续消耗你的CPU资源。
             //这会有一些副作用，因为CPU消耗完了就无法再去做其他任何的工作。
             while (iterator.hasNext()) {
-                SelectionKey key = (SelectionKey) iterator.next();
+                SelectionKey key = iterator.next();
                 iterator.remove();
                 try {
                     if (key.isAcceptable()) {
