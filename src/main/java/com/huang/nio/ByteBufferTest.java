@@ -27,9 +27,10 @@ import java.nio.ByteBuffer;
 //一旦读完buffer中的数据，需要让buffer准备好再次被写入。可以通过clear()或compact()方法来完成。
 
 //clear
-//如果调用的是clear()方法，position将被设置为0，limit被设置成capacity的值
+//从读模式切换到写模式，不会清空数据，但后续写数据会覆盖原来的数据。如果调用的是clear()方法，position将被设置为0，limit被设置成capacity的值
 
 //compact
+//从读数据切换到写模式
 //如果buffer中仍有未读的数据，且后续还需要这些数据，但是此时想要先写点数据，那么使用compact()方法
 //compact()方法将所有未读的数据拷贝到buffer起始处。然后将position设到最后一个未读元素正后面。
 //limit属性依然向clear()方法一样，设置成capacity。现在buffer准备好写数据了，但是不会覆盖未读的数据
