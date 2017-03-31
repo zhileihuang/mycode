@@ -1,6 +1,6 @@
 package com.huang.jvm;
 
-// -server -Xmx10m -Xms10m -XX:+DoEscapeAnalysis -XX:+PrintGC -XX:-UseTLAB -XX:+EliminateAllocations
+// -server -Xmx10m -Xms10m -XX:+DoEscapeAnalysis -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:-UseTLAB -XX:+EliminateAllocations
 public class OnStackTest {
 	
 	public static class User{
