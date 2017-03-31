@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.Before;
@@ -216,6 +217,22 @@ public class Test {
 		Optional alsoEmpty = Optional.ofNullable(null);
 		
 		System.out.println(emptyOptional.isPresent());
+		
+	}
+	
+	@org.junit.Test
+	public void test11(){
+		
+		List<Integer> numbers = asList(1,2,3,4);
+		List<Integer> sameOrder = numbers.stream().collect(Collectors.toList());
+		System.out.println(numbers+","+sameOrder);
+		
+	}
+	
+	@org.junit.Test
+	public void test12(){
+		
+		
 		
 	}
 	
